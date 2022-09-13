@@ -28,7 +28,7 @@ const data = await cacher.get({
 ## 20220913 lru mem cache
 
 ```js
-const data = cache.get({
+const data = await cache.get({
   key: 'ding',
   executor: () => 'dingding',
   // 启用内存缓存
