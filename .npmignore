@@ -3,3 +3,5 @@ test
 .github
 .prettierrc
 .eslintrc*
+CHANGELOG.md
+README.md
