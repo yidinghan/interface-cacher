@@ -1,9 +1,9 @@
 # interface-cacher
 
-[![npm](https://img.shields.io/npm/dt/interface-cacher.svg)](https://www.npmjs.com/package/interface-cacher)
-[![Build Status](https://api.travis-ci.org/gedennis/interface-cacher.svg?branch=master&name=dennis)](https://travis-ci.org/gedennis/interface-cacher)
-[![Coverage Status](https://coveralls.io/repos/github/gedennis/interface-cacher/badge.svg?branch=master)](https://coveralls.io/github/gedennis/interface-cacher?branch=master) 
-[![NPM version](https://img.shields.io/npm/v/interface-cacher.svg?style=flat)](https://www.npmjs.com/package/interface-cacher) [![Greenkeeper badge](https://badges.greenkeeper.io/gedennis/interface-cacher.svg)](https://greenkeeper.io/)
+<!-- [![npm](https://img.shields.io/npm/dt/interface-cacher.svg)](https://www.npmjs.com/package/interface-cacher) -->
+[![Build Status](https://api.travis-ci.org/gedennis/interface-cacher.svg?branch=master&name=dennis)](https://travis-ci.org/yidinghan/interface-cacher)
+[![Coverage Status](https://coveralls.io/repos/github/gedennis/interface-cacher/badge.svg?branch=master)](https://coveralls.io/github/yidinghan/interface-cacher?branch=master)
+<!-- [![NPM version](https://img.shields.io/npm/v/interface-cacher.svg?style=flat)](https://www.npmjs.com/package/interface-cacher) [![Greenkeeper badge](https://badges.greenkeeper.io/gedennis/interface-cacher.svg)](https://greenkeeper.io/) -->
 
 A simple interface cacher based on ioredis.
 
@@ -21,7 +21,7 @@ A simple interface cacher based on ioredis.
 
 **Parameters**
 
--   `payload`  
+-   `payload`
     -   `payload.redis` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** 用于redis的连接
         -   `payload.redis.host` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** host ip of redis (optional, default `localhost`)
         -   `payload.redis.port` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** port of redis (optional, default `6379`)
@@ -35,7 +35,7 @@ A simple interface cacher based on ioredis.
 
 **Parameters**
 
--   `payload` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
+-   `payload` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**
     -   `payload.key` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 要查找的key
     -   `payload.executor` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** 如果未击中，要执行的方法
     -   `payload.expire` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** 失效时间, 单位s
