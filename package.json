@@ -30,21 +30,20 @@
   "homepage": "https://github.com/gedennis/interface-cacher#readme",
   "dependencies": {
     "lodash.defaultsdeep": "^4.6.0",
-    "lodash.isundefined": "^3.0.1",
-    "bluebird": "^3.5.3"
+    "lodash.isundefined": "^3.0.1"
   },
   "devDependencies": {
-    "@types/ioredis": "^4.0.4",
-    "ava": "^0.25.0",
-    "coveralls": "^3.0.2",
-    "documentation": "^8.1.2",
-    "eslint": "^5.9.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "ioredis": "^4.2.0",
+    "@types/ioredis": "^4.28.10",
+    "ava": "^4.3.3",
+    "coveralls": "^3.1.1",
+    "documentation": "^14.0.0",
+    "eslint": "^8.23.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "ioredis": "^5.2.3",
     "lodash": "^4.17.11",
-    "nyc": "^13.1.0",
-    "standard-version": "^4.4.0"
+    "nyc": "^15.1.0",
+    "standard-version": "^9.5.0"
   },
   "ava": {
     "files": [
