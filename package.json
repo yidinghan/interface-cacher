@@ -1,6 +1,6 @@
 {
   "name": "@playding/redis-cacher",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A simple interface cacher based on ioredis",
   "main": "./lib/cache.js",
   "directories": {
