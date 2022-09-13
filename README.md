@@ -2,7 +2,26 @@
 
 [![master](https://github.com/yidinghan/interface-cacher/actions/workflows/node.js.yml/badge.svg)](https://github.com/yidinghan/interface-cacher/actions/workflows/node.js.yml)
 
-A simple interface cacher based on ioredis.
+A simple cacher based on ioredis.
+
+# usage
+
+```sh
+npm i @playding/redis-cacher
+```
+
+```js
+const Cacher = require('@playding/redis-cacher');
+const cacher = new Cacher();
+
+const data = await cacher.get({
+  key: 'ding',
+  executor: async () => {
+    // logic
+    return 'dingding;
+  },
+});
+```
 
 # changelogs
 
@@ -86,7 +105,7 @@ const getShops = (type) => {
 };
 
 使用方式：
-const Cacher = require('interface-cacher');
+const Cacher = require('@playding/redis-cacher');
 
 const cacher = new Cacher();
 
