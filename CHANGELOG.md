@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.1](https://github.com/yidinghan/interface-cacher/compare/v1.0.0...v1.0.1) (2022-09-13)
+
+
+### Features
+
+* disable mem ttl limit ([9248889](https://github.com/yidinghan/interface-cacher/commit/924888950202a740a13eaa2a2e06efce5fabe7f2))
+
 ## [1.0.0](https://github.com/yidinghan/interface-cacher/compare/v0.5.2...v1.0.0) (2022-09-13)
 
 
