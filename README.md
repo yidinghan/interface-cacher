@@ -1,8 +1,8 @@
 # interface-cacher
 
 <!-- [![npm](https://img.shields.io/npm/dt/interface-cacher.svg)](https://www.npmjs.com/package/interface-cacher) -->
-[![Build Status](https://api.travis-ci.org/gedennis/interface-cacher.svg?branch=master&name=dennis)](https://travis-ci.org/yidinghan/interface-cacher)
-[![Coverage Status](https://coveralls.io/repos/github/gedennis/interface-cacher/badge.svg?branch=master)](https://coveralls.io/github/yidinghan/interface-cacher?branch=master)
+<!-- [![Build Status](https://api.travis-ci.org/yidinghan/interface-cacher.svg?branch=master&name=dennis)](https://travis-ci.org/yidinghan/interface-cacher) -->
+<!-- [![Coverage Status](https://coveralls.io/repos/github/yidinghan/interface-cacher/badge.svg?branch=master)](https://coveralls.io/github/yidinghan/interface-cacher?branch=master) -->
 <!-- [![NPM version](https://img.shields.io/npm/v/interface-cacher.svg?style=flat)](https://www.npmjs.com/package/interface-cacher) [![Greenkeeper badge](https://badges.greenkeeper.io/gedennis/interface-cacher.svg)](https://greenkeeper.io/) -->
 
 A simple interface cacher based on ioredis.
