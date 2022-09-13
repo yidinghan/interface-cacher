@@ -34,7 +34,7 @@ const getShopes = async (type) => {
   return ['shop01', 'shop02'];
 };
 
-test.beforeEach(async () => client.flushall());
+test.beforeEach(async () => client.flushdb());
 
 const wait = async (time = 10) => {
   await new Promise((resolve) => setTimeout(resolve, time));

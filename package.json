@@ -47,7 +47,7 @@
     "files": [
       "test/**/*.test.js"
     ],
-    "concurrency": 25,
+    "serial": true,
     "failFast": false
   }
 }
