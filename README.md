@@ -32,7 +32,7 @@ const data = await cache.get({
   key: 'ding',
   executor: () => 'dingding',
   // 启用内存缓存
-  mem: true
+  mem: true,
 });
 ```
 
@@ -72,7 +72,7 @@ const data = await cache.get({
 
   - `payload.prefix` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** key 的默认前缀 (optional, default `cache.`)
   - `payload.expire` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** key 的有效期，单位 s (optional, default `5`)
-  - `payload.mem` **([object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) | [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean))?** 内存缓存配置，传 false 表示不启用
+  - `payload.mem` **([object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) | [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean))?** 内存缓存配置，传 false 表示不启用。全部参数可以看这个[文档说明](https://github.com/isaacs/node-lru-cache#usage)
 
     - `payload.mem.minRedisTtl` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** 最小可放内存的 redis 过期时间阈值 ms。默认 1000ms，redis.ttl 结果小于 1000ms 的就不会放到内存。0 代表有效 ttl 会全放。
     - `payload.mem.max` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** 内存缓存 keys 数量上限
@@ -105,7 +105,7 @@ const getShops = (type) => {
 };
 
 使用方式：
-const Cacher = require('@playding/redis-cacher');
+const Cacher = require('interface-cacher');
 
 const cacher = new Cacher();
 
