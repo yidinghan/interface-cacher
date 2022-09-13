@@ -1,6 +1,6 @@
 # interface-cacher
 
-![master](https://github.com/yidinghan/interface-cacher/actions/workflows/node.js.yml/badge.svg)
+[![master](https://github.com/yidinghan/interface-cacher/actions/workflows/node.js.yml/badge.svg)](https://github.com/yidinghan/interface-cacher/actions/workflows/node.js.yml)
 <!-- [![npm](https://img.shields.io/npm/dt/interface-cacher.svg)](https://www.npmjs.com/package/interface-cacher) -->
 <!-- [![Coverage Status](https://coveralls.io/repos/github/yidinghan/interface-cacher/badge.svg?branch=master)](https://coveralls.io/github/yidinghan/interface-cacher?branch=master) -->
 <!-- [![NPM version](https://img.shields.io/npm/v/interface-cacher.svg?style=flat)](https://www.npmjs.com/package/interface-cacher) [![Greenkeeper badge](https://badges.greenkeeper.io/gedennis/interface-cacher.svg)](https://greenkeeper.io/) -->
