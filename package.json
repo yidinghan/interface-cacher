@@ -1,5 +1,5 @@
 {
-  "name": "interface-cacher",
+  "name": "@playding/redis-cacher",
   "version": "0.5.1",
   "description": "A simple interface cacher based on ioredis",
   "main": "./lib/cache.js",
@@ -14,20 +14,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gedennis/interface-cacher.git"
+    "url": "git+https://github.com/yidinghan/interface-cacher.git"
   },
   "keywords": [
     "cacher",
-    "interface",
     "redis",
     "ioredis"
   ],
-  "author": "dennis.ge",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/gedennis/interface-cacher/issues"
+    "url": "https://github.com/yidinghan/interface-cacher/issues"
   },
-  "homepage": "https://github.com/gedennis/interface-cacher#readme",
+  "homepage": "https://github.com/yidinghan/interface-cacher#readme",
   "dependencies": {
     "lodash.defaultsdeep": "^4.6.0",
     "lodash.isundefined": "^3.0.1"
@@ -50,7 +48,6 @@
       "test/**/*.test.js"
     ],
     "concurrency": 25,
-    "serial": true,
     "failFast": false
   }
 }
