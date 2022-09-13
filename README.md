@@ -1,11 +1,29 @@
 # interface-cacher
 
 [![master](https://github.com/yidinghan/interface-cacher/actions/workflows/node.js.yml/badge.svg)](https://github.com/yidinghan/interface-cacher/actions/workflows/node.js.yml)
-<!-- [![npm](https://img.shields.io/npm/dt/interface-cacher.svg)](https://www.npmjs.com/package/interface-cacher) -->
-<!-- [![Coverage Status](https://coveralls.io/repos/github/yidinghan/interface-cacher/badge.svg?branch=master)](https://coveralls.io/github/yidinghan/interface-cacher?branch=master) -->
-<!-- [![NPM version](https://img.shields.io/npm/v/interface-cacher.svg?style=flat)](https://www.npmjs.com/package/interface-cacher) [![Greenkeeper badge](https://badges.greenkeeper.io/gedennis/interface-cacher.svg)](https://greenkeeper.io/) -->
 
 A simple interface cacher based on ioredis.
+
+# changelogs
+
+## 20220913 lru mem cache
+
+```js
+const data = cache.get({
+  key: 'ding',
+  executor: () => 'dingding',
+  // 启用内存缓存
+  mem: true
+});
+```
+
+有些场景下，缓存数据是静态的。例如首页广告位，在运营配置后一般短时间不会改变，也不会随着入参变化。
+
+在之前的版本中，数据从执行函数中生成后，通过 json stringify 变为 string 放到 redis 中。而后的其他服务实例可以通过固定的 key 从 redis 获取该 string，反过来通过 json parse 解析到实际数据如 object|array。
+
+对于静态数据，此时反序列化成为了最耗时的操作，特别是对于大对象。通过内存二级缓存，减少 json parse，降低 cpu 时间，提速操作。
+
+需要注意的是，该特性是通过增加内存资源消耗来实现，所以如果 mem.max 放的很高，或者 cache obj 很大，会带来比较明显的内存使用增加。
 
 # JSDoc
 
@@ -13,35 +31,48 @@ A simple interface cacher based on ioredis.
 
 ### Table of Contents
 
--   [constructor](#constructor)
--   [get](#get)
--   [delete](#delete)
+- [constructor](#constructor)
+  - [Parameters](#parameters)
+- [get](#get)
+  - [Parameters](#parameters-1)
+  - [Examples](#examples)
+- [delete](#delete)
+  - [Parameters](#parameters-2)
 
 ## constructor
 
-**Parameters**
+### Parameters
 
--   `payload`
-    -   `payload.redis` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** 用于redis的连接
-        -   `payload.redis.host` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** host ip of redis (optional, default `localhost`)
-        -   `payload.redis.port` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** port of redis (optional, default `6379`)
-        -   `payload.redis.db` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** cache db of redis (optional, default `12`)
-    -   `payload.prefix` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** key的默认前缀 (optional, default `cache.`)
-    -   `payload.expire` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** key的有效期，单位s (optional, default `5`)
+- `payload` &#x20;
+
+  - `payload.redis` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** 用于 redis 的连接
+
+    - `payload.redis.host` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** host ip of redis (optional, default `localhost`)
+    - `payload.redis.port` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** port of redis (optional, default `6379`)
+    - `payload.redis.db` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** cache db of redis (optional, default `12`)
+
+  - `payload.prefix` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** key 的默认前缀 (optional, default `cache.`)
+  - `payload.expire` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** key 的有效期，单位 s (optional, default `5`)
+  - `payload.mem` **([object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object) | [boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean))?** 内存缓存配置，传 false 表示不启用
+
+    - `payload.mem.minRedisTtl` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** 最小可放内存的 redis 过期时间阈值 ms。默认 1000ms，redis.ttl 结果小于 1000ms 的就不会放到内存。0 代表有效 ttl 会全放。
+    - `payload.mem.max` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** 内存缓存 keys 数量上限
 
 ## get
 
-使用redis为接口加缓存
+使用 redis 为接口加缓存
 
-**Parameters**
+### Parameters
 
--   `payload` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**
-    -   `payload.key` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 要查找的key
-    -   `payload.executor` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** 如果未击中，要执行的方法
-    -   `payload.expire` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** 失效时间, 单位s
-    -   `payload.raw` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 是否不用 decode/encode 数据 (optional, default `false`)
+- `payload` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**&#x20;
 
-**Examples**
+  - `payload.key` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 要查找的 key
+  - `payload.executor` **[function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** 如果未击中，要执行的方法
+  - `payload.expire` **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** 失效时间, 单位 s
+  - `payload.raw` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 是否不用 decode/encode 数据 (optional, default `false`)
+  - `payload.mem` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** 是否对当前 key 启用内存缓存，默认不启用 (optional, default `false`)
+
+### Examples
 
 ```javascript
 说明：以给getShops接口加缓存为例
@@ -65,23 +96,31 @@ const payload = {
   expire: 100
 };
 
-cache.get(payload)
+cacher.get(payload)
  .then((data) => {
    // process the data
  })
  .catch((err) => {
    // handle the exception when encounter with error
  });
+
+const data = await cacher.get({
+  key: 'getShopes'
+  executor: getShops.bind(null, 1),
+  // 启用内存缓存，如果内存命中自己返回内存结果
+  // 如果内存没有，就会获取 redis 结果，解析后放到内存中
+  mem: true
+}
 ```
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)>** 缓存中数据(击中) 或executor返回数据(未击中)
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)>** 缓存中数据(击中) 或 executor 返回数据(未击中)
 
 ## delete
 
 删除指定缓存
 
-**Parameters**
+### Parameters
 
--   `key` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 要删除key
+- `key` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 要删除 key
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** n 删除的key的数量, 同ioredis.del
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)>** n 删除的 key 的数量, 同 ioredis.del
