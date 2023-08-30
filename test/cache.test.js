@@ -278,3 +278,21 @@ test('cache: should remove the key in cache', async (t) => {
     })
     .then((data) => t.is(data, null));
 });
+
+test('cache: should user input client', async (t) => {
+  const clientTest = new Redis({
+    host: '127.0.0.1',
+    port: '6379',
+    db: '11',
+  });
+  const cacherTest = new Cacher({
+    redisClient: clientTest,
+    prefix: 'ding_'
+  });
+  await clientTest.del('ding_tt');
+  const resultPre = await clientTest.get('ding_tt');
+  t.is(resultPre, null);
+  await cacherTest.get({ key: 'tt', executor: async () => 0, expire: 100 });
+  const result = await clientTest.get('ding_tt');
+  t.is(result, '0');
+});
