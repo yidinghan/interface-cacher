@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 const _ = require('lodash');
 const test = require('ava').default;
 const Redis = require('ioredis');
@@ -41,6 +42,7 @@ test.beforeEach(async () => {
 });
 
 const wait = async (time = 10) => {
+  // eslint-disable-next-line no-promise-executor-return
   await new Promise((resolve) => setTimeout(resolve, time));
 };
 
