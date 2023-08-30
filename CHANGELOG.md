@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/yidinghan/interface-cacher/compare/v1.0.3...v1.1.0) (2023-08-30)
+
+
+### Features
+
+* support redisClient as input arg ([0ae312f](https://github.com/yidinghan/interface-cacher/commit/0ae312f0dfd56d5c1dbec404e64332c3bc81bde8))
+
 ### [1.0.3](https://github.com/yidinghan/interface-cacher/compare/v1.0.2...v1.0.3) (2022-09-13)
 
 ### [1.0.2](https://github.com/yidinghan/interface-cacher/compare/v1.0.1...v1.0.2) (2022-09-13)
