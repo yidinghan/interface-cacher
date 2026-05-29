@@ -1,6 +1,8 @@
-test
-.nyc_output
-.github
+AGENTS.md
+.github/
+.nyc_output/
+test/
+benchmarks/
 .prettierrc
 .eslintrc*
 CHANGELOG.md

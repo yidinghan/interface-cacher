@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/yidinghan/interface-cacher/compare/v1.1.0...v1.2.0) (2026-05-29)
+
+
+### Features
+
+* **serializer:** add custom codec support for JSON-compatible and binary serializers ([d8dc0fe](https://github.com/yidinghan/interface-cacher/commit/d8dc0fe6c1986361848912a296c2d759a5892497))
+* **benchmark:** add serializer comparison benchmark and optional codec examples ([8d3098b](https://github.com/yidinghan/interface-cacher/commit/8d3098b3d8353457fb829bb5c26c96c445a36017))
+
+
+### Performance Improvements
+
+* **serializer:** use structured catalog fixture in benchmark results ([fa828fc](https://github.com/yidinghan/interface-cacher/commit/fa828fce07ccc42c39fade1c5b0e0e3d21597f63))
+
+
+### Documentation
+
+* **repo:** add contributor and agent workflow guide ([dc33807](https://github.com/yidinghan/interface-cacher/commit/dc338073f4979ed795a480a60bc72de338951ac8))
+* **readme:** move API documentation before examples and benchmark notes ([c6dff35](https://github.com/yidinghan/interface-cacher/commit/c6dff35cd35c721f6525cb4cef2f47f7c1515d4a))
+
+
+### Tests
+
+* **serializer:** add Redis-backed compatibility tests for custom codecs ([7cee290](https://github.com/yidinghan/interface-cacher/commit/7cee29091606ecdf0b4f6dcf97846886676117cc))
+
+
+### Continuous Integration
+
+* **workflows:** refresh Node and Redis compatibility matrix ([7bd71f3](https://github.com/yidinghan/interface-cacher/commit/7bd71f3152b440d2caf0466ec9c33f602b5950f4))
+* **workflows:** expand CI coverage to Node 18/20/22/24/26 and Redis 5/6/7 ([e67e550](https://github.com/yidinghan/interface-cacher/commit/e67e550a6d593f875a53787ef932c9da313b989e))
+
 ## [1.1.0](https://github.com/yidinghan/interface-cacher/compare/v1.0.3...v1.1.0) (2023-08-30)
 
 
