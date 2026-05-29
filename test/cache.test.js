@@ -36,6 +36,40 @@ const getShopes = async (type) => {
   return ['shop01', 'shop02'];
 };
 
+const createJsonSerializer = (prefix = 'serializer:') => ({
+  serialize: (value) => `${prefix}${JSON.stringify(value)}`,
+  deserialize: (value) => JSON.parse(value.replace(prefix, '')),
+});
+
+const createBinaryClient = () => {
+  let stored = null;
+  const calls = {
+    get: 0,
+    getBuffer: 0,
+  };
+
+  return {
+    calls,
+    get: async () => {
+      calls.get++;
+      return stored ? stored.toString() : null;
+    },
+    getBuffer: async () => {
+      calls.getBuffer++;
+      return stored;
+    },
+    set: async (key, value) => {
+      stored = Buffer.isBuffer(value) ? value : Buffer.from(value);
+    },
+    ttl: async () => 10,
+    del: async () => {
+      stored = null;
+      return 1;
+    },
+    stored: () => stored,
+  };
+};
+
 test.beforeEach(async () => {
   await client.flushdb();
   cacher.mem.clear();
@@ -177,6 +211,149 @@ test('cache: should support raw param with data<string>', async (t) => {
   await wait();
   const data2 = await client.get(KEY);
   t.is(data2, 'ding');
+});
+
+test('cache: should use constructor serializer by default', async (t) => {
+  const serializer = createJsonSerializer('ctor:');
+  const instance = new Cacher({
+    ...opt,
+    serializer,
+  });
+
+  const data = await instance.get({
+    key: KEY_INPUT,
+    executor: async () => ({ shop: 'ding' }),
+  });
+  t.deepEqual(data, { shop: 'ding' });
+  t.is(await client.get(KEY), 'ctor:{"shop":"ding"}');
+
+  const cached = await instance.get({
+    key: KEY_INPUT,
+    executor: async () => {
+      throw new Error('should not execute');
+    },
+  });
+  t.deepEqual(cached, { shop: 'ding' });
+});
+
+test('cache: should let payload serializer override constructor serializer', async (t) => {
+  let ctorSerializeCount = 0;
+  const instance = new Cacher({
+    ...opt,
+    serializer: {
+      serialize: (value) => {
+        ctorSerializeCount++;
+        return `ctor:${JSON.stringify(value)}`;
+      },
+      deserialize: (value) => JSON.parse(value.replace('ctor:', '')),
+    },
+  });
+  const serializer = createJsonSerializer('payload:');
+
+  const data = await instance.get({
+    key: KEY_INPUT,
+    executor: async () => ({ shop: 'payload' }),
+    serializer,
+  });
+
+  t.deepEqual(data, { shop: 'payload' });
+  t.is(await client.get(KEY), 'payload:{"shop":"payload"}');
+  t.is(ctorSerializeCount, 0);
+});
+
+test('cache: should use getBuffer for binary serializer and cache Buffer data', async (t) => {
+  const redisClient = createBinaryClient();
+  const instance = new Cacher({
+    redisClient,
+    serializer: {
+      binary: true,
+      serialize: (value) => Uint8Array.from(Buffer.from(JSON.stringify(value))),
+      deserialize: (value) => JSON.parse(value.toString()),
+    },
+  });
+
+  const data = await instance.get({
+    key: KEY_INPUT,
+    executor: async () => ({ shop: 'binary' }),
+  });
+  const cached = await instance.get({
+    key: KEY_INPUT,
+    executor: async () => {
+      throw new Error('should not execute');
+    },
+  });
+
+  t.deepEqual(data, { shop: 'binary' });
+  t.deepEqual(cached, { shop: 'binary' });
+  t.true(Buffer.isBuffer(redisClient.stored()));
+  t.is(redisClient.stored().toString(), '{"shop":"binary"}');
+  t.is(redisClient.calls.get, 0);
+  t.is(redisClient.calls.getBuffer, 2);
+});
+
+test('cache: should deserialize on hit and serialize on miss', async (t) => {
+  const calls = {
+    serialize: 0,
+    deserialize: 0,
+  };
+  const serializer = {
+    serialize: (value) => {
+      calls.serialize++;
+      return JSON.stringify(value);
+    },
+    deserialize: (value) => {
+      calls.deserialize++;
+      return JSON.parse(value);
+    },
+  };
+  const instance = new Cacher({
+    ...opt,
+    serializer,
+  });
+
+  await instance.get({
+    key: KEY_INPUT,
+    executor: async () => ({ shop: 'miss' }),
+  });
+  t.deepEqual(calls, {
+    serialize: 1,
+    deserialize: 0,
+  });
+
+  await instance.get({
+    key: KEY_INPUT,
+    executor: async () => {
+      throw new Error('should not execute');
+    },
+  });
+  t.deepEqual(calls, {
+    serialize: 1,
+    deserialize: 1,
+  });
+});
+
+test('cache: should prefer raw over serializer', async (t) => {
+  const serializer = {
+    serialize: () => {
+      throw new Error('serializer should not serialize raw values');
+    },
+    deserialize: () => {
+      throw new Error('serializer should not deserialize raw values');
+    },
+  };
+  const instance = new Cacher({
+    ...opt,
+    serializer,
+  });
+
+  const data = await instance.get({
+    key: KEY_INPUT,
+    executor: getShopes.bind(null, 3),
+    raw: true,
+  });
+
+  t.is(data, 'ding');
+  t.is(await client.get(KEY), 'ding');
 });
 
 test('cache: should cache results in redis', async (t) => {
