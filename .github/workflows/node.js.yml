@@ -6,22 +6,36 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [14.x, 16.x, 18.x, 20.x]
-        redis-version: [5, 6, 7]
+        node-version: [22.x, 24.x]
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Use Redis ${{ matrix.node-version }}
-        uses: supercharge/redis-github-action@1.4.0
-        with:
-          redis-version: ${{ matrix.redis-version }}
-      - run: npm i --no-fund --no-audit
-      - run: npm test
+          cache: npm
+      - run: npm ci --no-fund --no-audit
+      - run: npm run test
