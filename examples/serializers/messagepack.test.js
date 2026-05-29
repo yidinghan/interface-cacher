@@ -1,7 +1,7 @@
 const test = require('ava').default;
 
 const Cacher = require('../../lib/cache');
-const createMemoryClient = require('./_memory-client');
+const createRedisClient = require('./_redis-client');
 const requireOptional = require('./_optional-require');
 
 const { decode, encode } = requireOptional('@msgpack/msgpack');
@@ -13,8 +13,13 @@ const serializer = {
 };
 
 test('serializer: MessagePack', async (t) => {
+  const redisClient = createRedisClient();
+  t.teardown(() => redisClient.quit());
+  await redisClient.del('EXAMPLE_SERIALIZER_messagepack');
+
   const cacher = new Cacher({
-    redisClient: createMemoryClient(),
+    redisClient,
+    prefix: 'EXAMPLE_SERIALIZER_',
     serializer,
   });
   const payload = {
@@ -38,4 +43,5 @@ test('serializer: MessagePack', async (t) => {
     name: 'ding',
     tags: ['redis', 'cache'],
   });
+  t.true(Buffer.isBuffer(await redisClient.getBuffer('EXAMPLE_SERIALIZER_messagepack')));
 });

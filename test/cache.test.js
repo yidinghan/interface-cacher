@@ -41,8 +41,7 @@ const createJsonSerializer = (prefix = 'serializer:') => ({
   deserialize: (value) => JSON.parse(value.replace(prefix, '')),
 });
 
-const createBinaryClient = () => {
-  let stored = null;
+const createBinaryClient = (redisClient) => {
   const calls = {
     get: 0,
     getBuffer: 0,
@@ -50,23 +49,18 @@ const createBinaryClient = () => {
 
   return {
     calls,
-    get: async () => {
+    get: async (...args) => {
       calls.get++;
-      return stored ? stored.toString() : null;
+      return redisClient.get(...args);
     },
-    getBuffer: async () => {
+    getBuffer: async (...args) => {
       calls.getBuffer++;
-      return stored;
+      return redisClient.getBuffer(...args);
     },
-    set: async (key, value) => {
-      stored = Buffer.isBuffer(value) ? value : Buffer.from(value);
-    },
-    ttl: async () => 10,
-    del: async () => {
-      stored = null;
-      return 1;
-    },
-    stored: () => stored,
+    set: (...args) => redisClient.set(...args),
+    ttl: (...args) => redisClient.ttl(...args),
+    del: (...args) => redisClient.del(...args),
+    stored: (key) => redisClient.getBuffer(key),
   };
 };
 
@@ -262,7 +256,7 @@ test('cache: should let payload serializer override constructor serializer', asy
 });
 
 test('cache: should use getBuffer for binary serializer and cache Buffer data', async (t) => {
-  const redisClient = createBinaryClient();
+  const redisClient = createBinaryClient(client);
   const instance = new Cacher({
     redisClient,
     serializer: {
@@ -285,8 +279,9 @@ test('cache: should use getBuffer for binary serializer and cache Buffer data', 
 
   t.deepEqual(data, { shop: 'binary' });
   t.deepEqual(cached, { shop: 'binary' });
-  t.true(Buffer.isBuffer(redisClient.stored()));
-  t.is(redisClient.stored().toString(), '{"shop":"binary"}');
+  const stored = await redisClient.stored(`cache.${KEY_INPUT}`);
+  t.true(Buffer.isBuffer(stored));
+  t.is(stored.toString(), '{"shop":"binary"}');
   t.is(redisClient.calls.get, 0);
   t.is(redisClient.calls.getBuffer, 2);
 });

@@ -66,7 +66,7 @@ const data = await cacher.get({
 
 当 `serializer.binary === true` 时，Redis 命中读取会调用 `redisClient.getBuffer(key)`，`serialize()` 可以返回 `Buffer`、`Uint8Array` 或字符串，其中 `Uint8Array` 会在写入前转成 `Buffer`。如果传入自定义 `redisClient`，它必须支持 `getBuffer()`；旧版 ioredis 不应启用会禁用 buffer 方法的 `dropBufferSupport`。
 
-本库不内置安装 protobuf、MessagePack、CBOR 等 codec，调用方按业务需要自行选择依赖。仓库提供了可选兼容示例：
+本库不内置安装 protobuf、MessagePack、CBOR 等 codec，调用方按业务需要自行选择依赖。仓库提供了可选兼容示例，运行时同样需要本机 Redis `127.0.0.1:6379`、DB `12`：
 
 ```sh
 npx -p ava -p protobufjs -p @msgpack/msgpack -p cbor-x ava examples/serializers/*.test.js
