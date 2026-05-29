@@ -80,7 +80,7 @@ npx -p ava -p protobufjs -p @msgpack/msgpack -p cbor-x ava examples/serializers/
 npx -p protobufjs -p @msgpack/msgpack -p cbor-x node --expose-gc benchmarks/serializers.js
 ```
 
-默认会生成 small、medium、large 三个确定性对象，其中 large 对象的 JSON string 精确为 1 MiB。Redis benchmark 使用本机 `127.0.0.1:6379`、DB `12`，key 前缀为 `BENCH_SERIALIZER_`，只删除 benchmark 自己写入的 key。
+默认会生成 small、medium、large 三个确定性结构化接口响应对象：分页元信息、filters、owner、summary，以及大量 repeated catalog items。每个 item 含 seller、dimensions、tags、attributes、variants 等嵌套字段。对象大小通过 item 数量自然放大，不使用 padding 字符串凑体积；运行输出会打印实际 JSON bytes。Redis benchmark 使用本机 `127.0.0.1:6379`、DB `12`，key 前缀为 `BENCH_SERIALIZER_`，只删除 benchmark 自己写入的 key。
 
 结果会受 Node 版本、CPU、codec 包版本和本机 Redis 状态影响。可以用 `--warmup-ms=... --min-ms=...` 覆盖默认的 `100ms` warmup 和 `500ms` 最小测量时间，例如：
 
@@ -88,91 +88,91 @@ npx -p protobufjs -p @msgpack/msgpack -p cbor-x node --expose-gc benchmarks/seri
 npx -p protobufjs -p @msgpack/msgpack -p cbor-x node --expose-gc benchmarks/serializers.js --warmup-ms=10 --min-ms=50
 ```
 
-一次本机完整 benchmark 结果如下，环境为 Node `v24.14.0`、darwin arm64、Redis `127.0.0.1:6379` DB `12`，codec 包版本为 protobufjs `8.4.2`、MessagePack `3.1.3`、CBOR `1.6.4`、Node v8 `13.6.233.17-node.41`。下面的图都以 ops/sec 为指标，越长越快；百分比是相对 JSON 的变化。
+一次本机完整 benchmark 结果如下，环境为 Node `v24.14.0`、darwin arm64、Redis `127.0.0.1:6379` DB `12`，codec 包版本为 protobufjs `8.4.2`、MessagePack `3.1.3`、CBOR `1.6.4`、Node v8 `13.6.233.17-node.41`。对象 JSON bytes 为 small `1,515`、medium `102,251`、large `1,048,573`。下面的图都以 ops/sec 为指标，越长越快；百分比是相对 JSON 的变化。
 
 ### Cache-hit read path
 
-真实 Redis 命中路径里，小对象主要受 Redis round-trip 影响，codec 差异很小；对象越大，反序列化成本越能被看出来。
+真实 Redis 命中路径里，小对象仍然主要受 Redis round-trip 影响。结构化大对象上，payload bytes 和反序列化成本都会影响结果；这次环境里 CBOR 的 Redis 命中路径最快。
 
-**small, 1 KiB JSON**
-
-| codec | ops/sec | vs JSON | chart |
-| --- | ---: | ---: | --- |
-| CBOR | 3,994 | +0.4% | ██████████████████████████████ |
-| JSON | 3,977 | baseline | ██████████████████████████████ |
-| Node v8 | 3,922 | -1.4% | █████████████████████████████ |
-| protobufjs | 3,920 | -1.4% | █████████████████████████████ |
-| MessagePack | 3,868 | -2.7% | █████████████████████████████ |
-
-**medium, 100 KiB JSON**
+**small, 1,515 bytes JSON**
 
 | codec | ops/sec | vs JSON | chart |
 | --- | ---: | ---: | --- |
-| CBOR | 1,607 | +7.0% | ██████████████████████████████ |
-| Node v8 | 1,600 | +6.5% | ██████████████████████████████ |
-| protobufjs | 1,569 | +4.5% | █████████████████████████████ |
-| MessagePack | 1,551 | +3.3% | █████████████████████████████ |
-| JSON | 1,502 | baseline | ████████████████████████████ |
+| MessagePack | 3,238 | +24.9% | ██████████████████████████████ |
+| Node v8 | 3,105 | +19.7% | █████████████████████████████ |
+| CBOR | 2,968 | +14.5% | ███████████████████████████ |
+| JSON | 2,593 | baseline | ████████████████████████ |
+| protobufjs | 2,233 | -13.9% | █████████████████████ |
 
-**large, 1 MiB JSON**
+**medium, 102,251 bytes JSON**
 
 | codec | ops/sec | vs JSON | chart |
 | --- | ---: | ---: | --- |
-| MessagePack | 251 | +11.6% | ██████████████████████████████ |
-| protobufjs | 244 | +8.4% | █████████████████████████████ |
-| CBOR | 242 | +7.6% | █████████████████████████████ |
-| Node v8 | 238 | +5.8% | ████████████████████████████ |
-| JSON | 225 | baseline | ███████████████████████████ |
+| CBOR | 925 | +38.3% | ██████████████████████████████ |
+| protobufjs | 788 | +17.8% | ██████████████████████████ |
+| Node v8 | 688 | +2.8% | ██████████████████████ |
+| JSON | 669 | baseline | ██████████████████████ |
+| MessagePack | 635 | -5.1% | █████████████████████ |
+
+**large, 1,048,573 bytes JSON**
+
+| codec | ops/sec | vs JSON | chart |
+| --- | ---: | ---: | --- |
+| CBOR | 134 | +48.9% | ██████████████████████████████ |
+| protobufjs | 107 | +18.9% | ████████████████████████ |
+| JSON | 90 | baseline | ████████████████████ |
+| Node v8 | 88 | -2.2% | ████████████████████ |
+| MessagePack | 76 | -15.6% | █████████████████ |
 
 ### Codec-only deserialize
 
-这组去掉 Redis，只看 CPU 反序列化。对 100 KiB 和 1 MiB 对象，protobufjs 和 MessagePack 的 deserialize 明显快于 JSON；小对象上 JSON 仍然很难被拉开。
+这组去掉 Redis，只看 CPU 反序列化。结构化 repeated object 与旧的大字符串 fixture 不同，binary codec 没有获得数量级优势；这次环境里 CBOR 在 medium 和 large 上最快。
 
 | size | fastest | JSON ops/sec | fastest ops/sec | fastest vs JSON |
 | --- | --- | ---: | ---: | ---: |
-| small | JSON | 442,833 | 442,833 | baseline |
-| medium | protobufjs | 26,399 | 161,916 | 6.13x |
-| large | protobufjs | 2,164 | 21,955 | 10.15x |
+| small | JSON | 115,116 | 115,116 | baseline |
+| medium | CBOR | 1,604 | 2,038 | +27.1% |
+| large | CBOR | 156 | 206 | +32.1% |
 
 **large deserialize detail**
 
 | codec | ops/sec | vs JSON | chart |
 | --- | ---: | ---: | --- |
-| protobufjs | 21,955 | 10.15x | ██████████████████████████████ |
-| MessagePack | 21,900 | 10.12x | ██████████████████████████████ |
-| Node v8 | 7,389 | 3.41x | ██████████ |
-| CBOR | 5,929 | 2.74x | ████████ |
-| JSON | 2,164 | baseline | ███ |
+| CBOR | 206 | +32.1% | ██████████████████████████████ |
+| JSON | 156 | baseline | ███████████████████████ |
+| protobufjs | 148 | -5.1% | ██████████████████████ |
+| Node v8 | 125 | -19.9% | ██████████████████ |
+| MessagePack | 117 | -25.0% | █████████████████ |
 
 ### Codec-only serialize
 
-写入 miss 路径时，large 对象的 serialize 成本差异很大：Node v8 和 CBOR 最快，MessagePack 在这次环境里最慢。
+写入 miss 路径时，这批结构化对象上 JSON stringify 仍然最快。binary codec 在 payload size 上有优势，但 serialize CPU 成本不一定更低。
 
 | size | fastest | JSON ops/sec | fastest ops/sec | fastest vs JSON |
 | --- | --- | ---: | ---: | ---: |
-| small | JSON | 753,043 | 753,043 | baseline |
-| medium | CBOR | 25,048 | 155,900 | 6.22x |
-| large | Node v8 | 2,048 | 28,861 | 14.09x |
+| small | JSON | 396,380 | 396,380 | baseline |
+| medium | JSON | 6,184 | 6,184 | baseline |
+| large | JSON | 568 | 568 | baseline |
 
 **large serialize detail**
 
 | codec | ops/sec | vs JSON | chart |
 | --- | ---: | ---: | --- |
-| Node v8 | 28,861 | 14.09x | ██████████████████████████████ |
-| CBOR | 18,792 | 9.18x | ████████████████████ |
-| protobufjs | 4,671 | 2.28x | █████ |
-| JSON | 2,048 | baseline | ██ |
-| MessagePack | 486 | -76.3% | █ |
+| JSON | 568 | baseline | ██████████████████████████████ |
+| Node v8 | 402 | -29.2% | █████████████████████ |
+| CBOR | 265 | -53.3% | ██████████████ |
+| protobufjs | 264 | -53.5% | ██████████████ |
+| MessagePack | 242 | -57.4% | █████████████ |
 
 ### Payload size
 
-这批对象里各 codec 的 Redis payload 大小差异不大；protobufjs 在 small 对象上压缩最明显，但到 1 MiB 主要由 padding 字符串主导。
+这批对象由 repeated nested records 构成，各 binary codec 都比 JSON 小。CBOR 和 protobufjs 在 medium/large 上最省空间。
 
-| size | JSON bytes | smallest codec | smallest bytes | saved vs JSON |
-| --- | ---: | --- | ---: | ---: |
-| small | 1,024 | protobufjs | 769 | 24.9% |
-| medium | 102,400 | protobufjs | 102,146 | 0.2% |
-| large | 1,048,576 | protobufjs | 1,048,322 | 0.02% |
+| size | JSON bytes | protobufjs bytes | MessagePack bytes | CBOR bytes | Node v8 bytes |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| small | 1,515 | 638 | 1,178 | 1,167 | 1,369 |
+| medium | 102,251 | 42,606 | 78,861 | 41,651 | 92,764 |
+| large | 1,048,573 | 441,797 | 808,512 | 424,481 | 951,438 |
 
 <details>
 <summary>Raw benchmark tables</summary>
@@ -181,56 +181,56 @@ npx -p protobufjs -p @msgpack/msgpack -p cbor-x node --expose-gc benchmarks/seri
 
 | size | codec | operation | ops/sec | avg ms | serialized bytes |
 | --- | --- | --- | ---: | ---: | ---: |
-| small | JSON | serialize | 753,043 | 0.0013 | 1,024 |
-| small | JSON | deserialize | 442,833 | 0.0023 | 1,024 |
-| small | protobufjs | serialize | 452,563 | 0.0022 | 769 |
-| small | protobufjs | deserialize | 431,931 | 0.0023 | 769 |
-| small | MessagePack | serialize | 266,651 | 0.0038 | 915 |
-| small | MessagePack | deserialize | 338,400 | 0.0030 | 915 |
-| small | CBOR | serialize | 577,277 | 0.0017 | 870 |
-| small | CBOR | deserialize | 388,518 | 0.0026 | 870 |
-| small | Node v8 | serialize | 449,915 | 0.0022 | 994 |
-| small | Node v8 | deserialize | 303,371 | 0.0033 | 994 |
-| medium | JSON | serialize | 25,048 | 0.0399 | 102,400 |
-| medium | JSON | deserialize | 26,399 | 0.0379 | 102,400 |
-| medium | protobufjs | serialize | 38,655 | 0.0259 | 102,146 |
-| medium | protobufjs | deserialize | 161,916 | 0.0062 | 102,146 |
-| medium | MessagePack | serialize | 3,625 | 0.2759 | 102,293 |
-| medium | MessagePack | deserialize | 140,545 | 0.0071 | 102,293 |
-| medium | CBOR | serialize | 155,900 | 0.0064 | 102,248 |
-| medium | CBOR | deserialize | 104,566 | 0.0096 | 102,248 |
-| medium | Node v8 | serialize | 148,367 | 0.0067 | 102,371 |
-| medium | Node v8 | deserialize | 106,270 | 0.0094 | 102,371 |
-| large | JSON | serialize | 2,048 | 0.4882 | 1,048,576 |
-| large | JSON | deserialize | 2,164 | 0.4622 | 1,048,576 |
-| large | protobufjs | serialize | 4,671 | 0.2141 | 1,048,322 |
-| large | protobufjs | deserialize | 21,955 | 0.0455 | 1,048,322 |
-| large | MessagePack | serialize | 486 | 2.0585 | 1,048,469 |
-| large | MessagePack | deserialize | 21,900 | 0.0457 | 1,048,469 |
-| large | CBOR | serialize | 18,792 | 0.0532 | 1,048,424 |
-| large | CBOR | deserialize | 5,929 | 0.1687 | 1,048,424 |
-| large | Node v8 | serialize | 28,861 | 0.0346 | 1,048,547 |
-| large | Node v8 | deserialize | 7,389 | 0.1353 | 1,048,547 |
+| small | JSON | serialize | 396,380 | 0.0025 | 1,515 |
+| small | JSON | deserialize | 115,116 | 0.0087 | 1,515 |
+| small | protobufjs | serialize | 179,113 | 0.0056 | 638 |
+| small | protobufjs | deserialize | 109,977 | 0.0091 | 638 |
+| small | MessagePack | serialize | 166,188 | 0.0060 | 1,178 |
+| small | MessagePack | deserialize | 82,965 | 0.0121 | 1,178 |
+| small | CBOR | serialize | 129,918 | 0.0077 | 1,167 |
+| small | CBOR | deserialize | 94,206 | 0.0106 | 1,167 |
+| small | Node v8 | serialize | 226,589 | 0.0044 | 1,369 |
+| small | Node v8 | deserialize | 87,961 | 0.0114 | 1,369 |
+| medium | JSON | serialize | 6,184 | 0.1617 | 102,251 |
+| medium | JSON | deserialize | 1,604 | 0.6234 | 102,251 |
+| medium | protobufjs | serialize | 2,856 | 0.3502 | 42,606 |
+| medium | protobufjs | deserialize | 1,527 | 0.6547 | 42,606 |
+| medium | MessagePack | serialize | 2,093 | 0.4778 | 78,861 |
+| medium | MessagePack | deserialize | 1,201 | 0.8325 | 78,861 |
+| medium | CBOR | serialize | 2,873 | 0.3481 | 41,651 |
+| medium | CBOR | deserialize | 2,038 | 0.4907 | 41,651 |
+| medium | Node v8 | serialize | 4,798 | 0.2084 | 92,764 |
+| medium | Node v8 | deserialize | 1,352 | 0.7395 | 92,764 |
+| large | JSON | serialize | 568 | 1.7594 | 1,048,573 |
+| large | JSON | deserialize | 156 | 6.4154 | 1,048,573 |
+| large | protobufjs | serialize | 264 | 3.7889 | 441,797 |
+| large | protobufjs | deserialize | 148 | 6.7622 | 441,797 |
+| large | MessagePack | serialize | 242 | 4.1273 | 808,512 |
+| large | MessagePack | deserialize | 117 | 8.5624 | 808,512 |
+| large | CBOR | serialize | 265 | 3.7691 | 424,481 |
+| large | CBOR | deserialize | 206 | 4.8461 | 424,481 |
+| large | Node v8 | serialize | 402 | 2.4898 | 951,438 |
+| large | Node v8 | deserialize | 125 | 8.0087 | 951,438 |
 
 #### redis-hit
 
 | size | codec | operation | ops/sec | avg ms | serialized bytes |
 | --- | --- | --- | ---: | ---: | ---: |
-| small | JSON | GET + parse | 3,977 | 0.2514 | 1,024 |
-| small | protobufjs | GETBUFFER + deserialize | 3,920 | 0.2551 | 769 |
-| small | MessagePack | GETBUFFER + deserialize | 3,868 | 0.2585 | 915 |
-| small | CBOR | GETBUFFER + deserialize | 3,994 | 0.2504 | 870 |
-| small | Node v8 | GETBUFFER + deserialize | 3,922 | 0.2550 | 994 |
-| medium | JSON | GET + parse | 1,502 | 0.6657 | 102,400 |
-| medium | protobufjs | GETBUFFER + deserialize | 1,569 | 0.6374 | 102,146 |
-| medium | MessagePack | GETBUFFER + deserialize | 1,551 | 0.6448 | 102,293 |
-| medium | CBOR | GETBUFFER + deserialize | 1,607 | 0.6222 | 102,248 |
-| medium | Node v8 | GETBUFFER + deserialize | 1,600 | 0.6250 | 102,371 |
-| large | JSON | GET + parse | 225 | 4.4417 | 1,048,576 |
-| large | protobufjs | GETBUFFER + deserialize | 244 | 4.0989 | 1,048,322 |
-| large | MessagePack | GETBUFFER + deserialize | 251 | 3.9890 | 1,048,469 |
-| large | CBOR | GETBUFFER + deserialize | 242 | 4.1280 | 1,048,424 |
-| large | Node v8 | GETBUFFER + deserialize | 238 | 4.2037 | 1,048,547 |
+| small | JSON | GET + parse | 2,593 | 0.3857 | 1,515 |
+| small | protobufjs | GETBUFFER + deserialize | 2,233 | 0.4478 | 638 |
+| small | MessagePack | GETBUFFER + deserialize | 3,238 | 0.3089 | 1,178 |
+| small | CBOR | GETBUFFER + deserialize | 2,968 | 0.3369 | 1,167 |
+| small | Node v8 | GETBUFFER + deserialize | 3,105 | 0.3220 | 1,369 |
+| medium | JSON | GET + parse | 669 | 1.4958 | 102,251 |
+| medium | protobufjs | GETBUFFER + deserialize | 788 | 1.2695 | 42,606 |
+| medium | MessagePack | GETBUFFER + deserialize | 635 | 1.5755 | 78,861 |
+| medium | CBOR | GETBUFFER + deserialize | 925 | 1.0807 | 41,651 |
+| medium | Node v8 | GETBUFFER + deserialize | 688 | 1.4540 | 92,764 |
+| large | JSON | GET + parse | 90 | 11.1145 | 1,048,573 |
+| large | protobufjs | GETBUFFER + deserialize | 107 | 9.3855 | 441,797 |
+| large | MessagePack | GETBUFFER + deserialize | 76 | 13.1712 | 808,512 |
+| large | CBOR | GETBUFFER + deserialize | 134 | 7.4827 | 424,481 |
+| large | Node v8 | GETBUFFER + deserialize | 88 | 11.3284 | 951,438 |
 
 </details>
 
