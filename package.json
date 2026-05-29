@@ -7,10 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "doc": "documentation readme lib/cache.js --section=JSDoc",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "test": "nyc ava -v",
-    "release": "standard-version"
+    "test": "nyc ava -v"
   },
   "repository": {
     "type": "git",
@@ -27,22 +25,20 @@
   },
   "homepage": "https://github.com/yidinghan/interface-cacher#readme",
   "dependencies": {
-    "ioredis": "^5.2.3",
+    "ioredis": "^5.11.0",
     "lodash.defaultsdeep": "^4.6.0",
     "lodash.isundefined": "^3.0.1",
-    "lru-cache": "^7.14.0"
+    "lru-cache": "^7.18.3"
   },
   "devDependencies": {
     "@types/ioredis": "^4.28.10",
     "ava": "^4.3.3",
     "coveralls": "^3.1.1",
-    "documentation": "^14.0.0",
-    "eslint": "^8.23.1",
+    "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "lodash": "^4.17.11",
-    "nyc": "^15.1.0",
-    "standard-version": "^9.5.0"
+    "eslint-plugin-import": "^2.32.0",
+    "lodash": "^4.18.1",
+    "nyc": "^15.1.0"
   },
   "ava": {
     "files": [

@@ -6,7 +6,7 @@ This package is a small CommonJS Node.js library for Redis-backed interface cach
 
 - `lib/cache.js` contains the exported `Cacher` class and all runtime logic.
 - `test/cache.test.js` contains AVA tests for Redis caching, raw values, memory cache behavior, and custom Redis clients.
-- `README.md` is generated partly from JSDoc via `npm run doc`; update source comments before regenerating docs.
+- `README.md` includes API reference content that is maintained manually during release prep.
 - `package.json` defines package metadata, npm scripts, AVA config, and dependencies.
 
 Keep new runtime code under `lib/` and tests under `test/`. Name tests with the existing `*.test.js` pattern.
@@ -15,9 +15,8 @@ Keep new runtime code under `lib/` and tests under `test/`. Name tests with the 
 
 - `npm install` installs runtime and development dependencies.
 - `npm run test` runs `nyc ava -v`; Redis must be available at `127.0.0.1:6379`, database `12`, because tests flush that database.
-- `npm run doc` regenerates the JSDoc section in `README.md` from `lib/cache.js`.
 - `npm run coverage` reports lcov coverage to Coveralls; this is mainly for CI/release use.
-- `npm run release` runs `standard-version` to update changelog and package version.
+- Release notes, version bumps, and tags are maintained manually during release prep.
 
 There is no declared `lint` script. If you need style checks, use the existing ESLint dependencies explicitly, for example `npx eslint lib test`.
 
