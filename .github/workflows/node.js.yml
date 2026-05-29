@@ -19,10 +19,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [18.x, 20.x, 22.x, 24.x, 26.x]
+        redis-version: [5, 6, 7]
     services:
       redis:
-        image: redis:7-alpine
+        image: redis:${{ matrix.redis-version }}-alpine
         ports:
           - 6379:6379
         options: >-
